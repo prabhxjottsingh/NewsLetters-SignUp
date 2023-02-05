@@ -5,16 +5,28 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const request = require("request");
 const path = require("path");
+const serverless = require("serverless-http");
+const router = express.Router();
 
 const app = express();
 
 var PORT = 3000 || process.env.PORT;
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static("public"));
+app.use(express.static('../public'));
+  app.use('/.netlify/functions/api', router);
+
+module.exports = app;
+module.exports.handler = serverless(app);
+
+var newPath = path.join(__dirname, '..', 'dist', '/');
 
 app.get("/", function(req, res){
-  res.sendFile(__dirname + "/signup.html");
+  // res.send("Server is running ");
+  // console.log(newPath)
+  res.sendFile(newPath + "/index.html");
+  // console.log(__dirname + "/dist/signup.html");
+  // res.sendFile(__dirname + "/signup.html");
 });
 
 app.post("/", function(req, res){
@@ -23,7 +35,7 @@ app.post("/", function(req, res){
   var email = req.body.emailAddress;
 
   if( !firstName || !lastName || !email ){
-    res.sendFile(__dirname + '/failure.html');
+    res.sendFile( newPath + '/failure.html');
     return;
   }
 
@@ -54,15 +66,15 @@ app.post("/", function(req, res){
   request(options, (err, response, body) => {
     if( err ){
       // res.send("Failed subscribed");
-      res.sendFile(__dirname + '/failure.html');
+      res.sendFile(newPath +  '/failure.html');
     }else{
       if( response.statusCode === 200 ){
         // res.send("Successfully subscribed");
-        res.sendFile(__dirname + '/success.html');
+        res.sendFile(newPath + '/success.html');
       }
       else{
         // res.send("Failed subscribed");
-        res.sendFile(__dirname + '/failure.html');
+        res.sendFile(newPath + '/failure.html');
       }
     }
   });
